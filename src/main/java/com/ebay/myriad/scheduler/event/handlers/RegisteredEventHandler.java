@@ -37,7 +37,8 @@ public class RegisteredEventHandler implements EventHandler<RegisteredEvent> {
     @Override
     public void onEvent(RegisteredEvent event, long sequence, boolean endOfBatch)
             throws Exception {
-        LOGGER.info("Received event: {} with frameworkId: {}", event, event.getFrameworkId());
+        LOGGER.info("Received event: {} with frameworkId: {} and master: {}", event, event.getFrameworkId(),
+                event.getMasterInfo().getHostname());
         schedulerState.getMyriadState().setFrameworkId(event.getFrameworkId());
         reconcileService.reconcile(event.getDriver());
     }

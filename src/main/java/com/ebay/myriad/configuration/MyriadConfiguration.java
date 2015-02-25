@@ -86,6 +86,12 @@ public class MyriadConfiguration {
     @NotEmpty
     private Map<String, String> yarnEnvironment;
 
+    @JsonProperty
+    private String principal;
+
+    @JsonProperty
+    private String secretFile;
+
     public String getMesosMaster() {
         return mesosMaster;
     }
@@ -115,6 +121,10 @@ public class MyriadConfiguration {
     public Boolean isRebalancer() {
         return rebalancer != null ? rebalancer : DEFAULT_REBALANCER;
     }
+
+    public String getPrincipal() { return principal; }
+
+    public String getSecretFile() { return secretFile; }
 
     public NodeManagerConfiguration getNodeManagerConfiguration() {
         return this.nodemanager;

@@ -17,17 +17,17 @@ package com.ebay.myriad.scheduler;
 
 import com.ebay.myriad.configuration.MyriadConfiguration;
 import com.ebay.myriad.state.SchedulerState;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import org.apache.mesos.MesosSchedulerDriver;
-import org.apache.mesos.Protos.FrameworkID;
-import org.apache.mesos.Protos.FrameworkInfo;
+import org.apache.mesos.Protos.*;
 import org.apache.mesos.Protos.FrameworkInfo.Builder;
-import org.apache.mesos.Protos.Status;
-import org.apache.mesos.Protos.TaskID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 public class MyriadDriver {
@@ -56,8 +56,23 @@ public class MyriadDriver {
             throw new RuntimeException(e);
         }
 
-        this.driver = new MesosSchedulerDriver(scheduler,
-                frameworkInfoBuilder.build(), cfg.getMesosMaster());
+        if (cfg.getPrincipal() != null) {
+            Credential.Builder credBuilder = Credential.newBuilder();
+            credBuilder.setPrincipal(cfg.getPrincipal());
+            if (cfg.getSecretFile() != null) {
+                try {
+                    credBuilder.setSecret(ByteString.readFrom(new FileInputStream(cfg.getSecretFile())));
+                } catch (IOException e) {
+                    LOGGER.error("Error building credentials (secret): {}", e);
+                    throw new RuntimeException(e);
+                }
+            }
+            this.driver = new MesosSchedulerDriver(scheduler,
+                    frameworkInfoBuilder.build(), cfg.getMesosMaster(), credBuilder.build());
+        } else {
+            this.driver = new MesosSchedulerDriver(scheduler,
+                    frameworkInfoBuilder.build(), cfg.getMesosMaster());
+        }
     }
 
     public Status start() {
